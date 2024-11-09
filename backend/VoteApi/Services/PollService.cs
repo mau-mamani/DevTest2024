@@ -1,6 +1,7 @@
 using VoteApi.Models;
 using VoteApi.Models.Dto;
 using VoteApi.Repositories;
+using VoteApi.Validators;
 
 namespace VoteApi.Services;
 
@@ -8,10 +9,13 @@ public class PollService : IPollService
 {
     private IRepository<Poll> _pollRepository;
     private IDtoConverter<InputPoll, Poll> _converter;
+    private IValidator<Poll> _validator;
 
-    public PollService(IRepository<Poll> pollRepository){
-        _pollRepository = pollRepository;
+    public PollService()
+    {
+        _pollRepository = new PollMemoryRepository();
         _converter = new PollDtoConverter();
+        _validator = new PollValidator();
     }
 
     public async Task<Poll> GetPoll(int id)
@@ -26,7 +30,16 @@ public class PollService : IPollService
 
     public async Task<Poll> PostPoll(InputPoll inputPoll)
     {
+
         var poll = _converter.DtoToModel(inputPoll);
-        return await _pollRepository.PostValue(poll);
+        var isValid = _validator.Validate(poll);
+        if (isValid)
+        {
+            return _pollRepository.PostValue(poll);
+        }
+        else
+        {
+            return null;
+        }
     }
-} 
+}

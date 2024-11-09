@@ -5,7 +5,7 @@ namespace VoteApi.Repositories;
 
 public class PollMemoryRepository : IRepository<Poll>
 {
-    private IList<Poll> _polls;
+    private List<Poll> _polls;
 
     public PollMemoryRepository()
     {
@@ -13,40 +13,46 @@ public class PollMemoryRepository : IRepository<Poll>
         Poll pollExample = new Poll{
             Id = 1,
             Name = "example base",
-            
+            Options = [
+                new Option {
+                    Id = 2,
+                    Name = "option 1",
+                    Votes = 1
+                }
+            ]   
         };
         _polls.Add(pollExample);
     }
 
-    public Task<Poll> GetValue(int id)
+    public async Task<Poll> GetValue(int id)
     {
-        throw new NotImplementedException();
-    }
+        return _polls.Find(x => x.Id == id);
+    } 
 
     public async Task<List<Poll>> GetValues()
     {
         try{
-            return (List<Poll>)_polls;
+            return _polls;
         }catch(Exception e){
             return null;
         }
     }
 
-    public async Task<Poll> PostValue(Poll value)
+    public Poll PostValue(Poll value)
     {
         try
         {
             var currentCount = _polls.Count;
             if (currentCount > 1)
             {
-                value.Id = _polls[currentCount].Id + 1;
+                value.Id = _polls[currentCount - 1].Id + 1;
             }
             else
             {
                 value.Id = 1;
             }
             _polls.Add(value);
-            return value;
+            return  value;
         }
         catch (Exception e)
         {
